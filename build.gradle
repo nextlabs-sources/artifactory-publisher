@@ -1,0 +1,522 @@
+buildscript {
+    repositories {
+        maven {
+            url "${artifactoryContextUrl}/libs-release"
+            credentials {
+                username = artifactoryUser
+                password = artifactoryPassword
+            }
+        }
+    }
+    dependencies {
+        classpath 'org.jfrog.buildinfo:build-info-extractor-gradle:4.10.0'
+    }
+}
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.jfrog.artifactory'
+}
+
+def versionProperties = new Properties()
+file("${buildArtifactsFolder}/version.properties").withInputStream { versionProperties.load(it) }
+def maintenanceReleaseNumber = versionProperties.getProperty('maintenance').toInteger()
+def patchReleaseNumber = versionProperties.getProperty('patch').toInteger()
+def fixReleaseNumber = patchReleaseNumber > 0 ? patchReleaseNumber : maintenanceReleaseNumber
+def ccVersion = String.format('%d.%02d%s-SNAPSHOT',
+        versionProperties.getProperty('major').toInteger(),
+        versionProperties.getProperty('minor').toInteger(),
+        fixReleaseNumber > 0 ? String.format('.%d', fixReleaseNumber) : '')
+
+artifactory {
+    contextUrl = artifactoryContextUrl
+    publish {
+        repository {
+            repoKey = ccVersion.endsWith('SNAPSHOT') ? 'libs-snapshot-local' : 'libs-release-local'
+            username = artifactoryUser
+            password = artifactoryPassword
+            maven = true
+        }
+        defaults {
+            publications('agentControlManager', 'agentIpcStub', 'agentTypes', 'appFramework', 'certificates', 'clientPf', 'clientSecurityConfig',
+                    'consoleOauth2JwtSecretPluginServer', 'commonDictionary', 'commonDomain', 'commonDomainTypes', 'commonFramework', 'commonFrameworkTypes',
+                    'commonPf', 'commonRes', 'commonVersion', 'commonVersionImpl', 'configurationFileParser', 'crypt',
+                    'dabs', 'dabsDccServices', 'dac', 'dacDataSync', 'dacServices', 'dacTypes', 'dbInit', 'dcsf', 'dcsfTypes',
+                    'dem', 'deploymentTypes', 'dkms', 'dms', 'dmsServices', 'dpc', 'dps', 'enrollmentService', 'inquiryManagerShared',
+                    'logTypes', 'license', 'managementTypes', 'nextlabsOauth2', 'nextlabsOpenazPep', 'nextlabsOpenazPepResources', 'openazPep', 'openazXacml', 'policyServices',
+                    'policyTypes', 'seedData', 'serverAxisSecurity', 'serverBase', 'serverBaseInternal', 'serverDatasource', 'serverDcsf',
+                    'serverDictionary', 'serverFramework', 'serverPdpPluginManager', 'serverPf', 'serverSecurity', 'serverSharedApplicationUsers',
+                    'serverSharedCustomapps', 'serverSharedEnrollment', 'serverSharedServices', 'serverSharedTypes',
+                    'storedResultsShared', 'tools', 'versionLib', 'versionTypes')
+        }
+    }
+    resolve {
+        repository {
+            repoKey = 'libs-snapshot'
+            username = artifactoryUser
+            password = artifactoryPassword
+            maven = true
+        }
+    }
+}
+
+publishing {
+    publications {
+        agentIpcStub(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'agent-ipc-stub'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/agent-ipc-stub.jar"))
+        }
+        agentControlManager(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'agent-controlmanager'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/agent-controlmanager.jar"))
+        }
+        agentTypes(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'agent-types'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/agent-types.jar"))
+        }
+        appFramework(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'app-framework'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/app-framework.jar"))
+        }
+        certificates(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'certificates'
+            version ccVersion
+            artifact(file("$buildDir/certificates.zip"))
+        }
+        clientPf(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'client-pf'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/client-pf.jar"))
+        }
+        clientSecurityConfig(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'client-security-config'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/client-security-config.jar"))
+        }
+        commonDictionary(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'common-dictionary'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/common-dictionary.jar"))
+        }
+        commonDomain(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'common-domain'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/common-domain.jar"))
+        }
+        commonDomainTypes(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'common-domain-types'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/common-domain-types.jar"))
+        }
+        commonFramework(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'common-framework'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/common-framework.jar"))
+        }
+        commonFrameworkTypes(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'common-framework-types'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/common-framework-types.jar"))
+        }
+        commonPf(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'common-pf'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/common-pf.jar"))
+        }
+        commonRes(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'common-res'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/common-res.jar"))
+        }
+        commonVersion(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'common-version'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/common-version.jar"))
+        }
+        commonVersionImpl(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'common-version-impl'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/common-version-impl.jar"))
+        }
+        configurationFileParser(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'configurationFileParser'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/configurationFileParser.jar"))
+        }
+        crypt(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'crypt'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/crypt.jar"))
+        }
+        dabs(MavenPublication) {
+            groupId 'com.nextlabs.cc.apps'
+            artifactId 'dabs'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/run/server/apps/dabs.war"))
+        }
+        dabsDccServices(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'dabs-dcc-services'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/dabs-dcc-services.jar"))
+        }
+        dac(MavenPublication) {
+            groupId 'com.nextlabs.cc.apps'
+            artifactId 'dac'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/run/server/apps/dac.war"))
+        }
+        dacDataSync(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'dac-dataSync'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/dac-dataSync.jar"))
+        }
+        dacServices(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'dac-services'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/dac-services.jar"))
+        }
+        dacTypes(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'dac-types'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/dac-types.jar"))
+        }
+        dcsf(MavenPublication) {
+            groupId 'com.nextlabs.cc.apps'
+            artifactId 'dcsf'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/run/server/apps/dcsf.war"))
+        }
+        dcsfTypes(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'dcsf-types'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/dcsf-types.jar"))
+        }
+        dem(MavenPublication) {
+            groupId 'com.nextlabs.cc.apps'
+            artifactId 'dem'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/run/server/apps/dem.war"))
+        }
+        deploymentTypes(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'deployment-types'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/deployment-types.jar"))
+        }
+        dkms(MavenPublication) {
+            groupId 'com.nextlabs.cc.apps'
+            artifactId 'dkms'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/run/server/apps/dkms.war"))
+        }
+        dms(MavenPublication) {
+            groupId 'com.nextlabs.cc.apps'
+            artifactId 'dms'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/run/server/apps/dms.war"))
+        }
+        dmsServices(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'dms-services'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/dms-services.jar"))
+        }
+        dpc(MavenPublication) {
+            groupId 'com.nextlabs.cc.apps'
+            artifactId 'dpc'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/run/server/apps/dpc.war"))
+        }
+        dps(MavenPublication) {
+            groupId 'com.nextlabs.cc.apps'
+            artifactId 'dps'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/run/server/apps/dps.war"))
+        }
+        enrollmentService(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'enrollment-service'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/enrollment-service.jar"))
+        }
+        inquiryManagerShared(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'inquiry-manager-shared'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/inquiry-manager-shared.jar"))
+        }
+        license(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'license'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/run/server/license/license.jar"))
+        }
+        logTypes(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'log-types'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/log-types.jar"))
+        }
+        managementTypes(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'management-types'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/management-types.jar"))
+        }
+        nextlabsOauth2(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'nextlabs-oauth2-jwt'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/nextlabs-oauth2-jwt.jar"))
+        }
+        nextlabsOpenazPep(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'nextlabs-openaz-pep'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/nextlabs-openaz-pep.jar"))
+        }
+        nextlabsOpenazPepResources(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'nextlabs-openaz-pep-resources'
+            version ccVersion
+            artifact(file("${buildDir}/nextlabs-openaz-pep.zip"))
+        }
+        openazPep(MavenPublication) {
+            groupId 'org.apache.openaz'
+            artifactId 'openaz-pep'
+            version '0.0.2-SNAPSHOT'
+            artifact(file("${buildArtifactsFolder}/nextlabs-openaz-pep/java/libs/openaz-pep-0.0.2-SNAPSHOT.jar"))
+        }
+        openazXacml(MavenPublication) {
+            groupId 'org.apache.openaz'
+            artifactId 'openaz-xacml'
+            version '0.0.2-SNAPSHOT'
+            artifact(file("${buildArtifactsFolder}/nextlabs-openaz-pep/java/libs/openaz-xacml-0.0.2-SNAPSHOT.jar"))
+        }
+        consoleOauth2JwtSecretPluginServer(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'console-oauth2-jwt-secret-plugin-server'
+            version ccVersion
+            artifact(file("$buildDir/console-oauth2-jwt-secret-plugin.zip"))
+        }
+        policyServices(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'policy-services'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/policy-services.jar"))
+        }
+        policyTypes(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'policy-types'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/policy-types.jar"))
+        }
+        seedData(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'seed-data'
+            version ccVersion
+            artifact(file("$buildDir/seed-data.zip"))
+        }
+        serverAxisSecurity(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-axis-security'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-axis-security.jar"))
+        }
+        serverBase(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-base'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-base.jar"))
+        }
+        serverBaseInternal(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-base-internal'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-base-internal.jar"))
+        }
+        serverDatasource(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-datasource'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-datasource.jar"))
+        }
+        serverDcsf(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-dcsf'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-dcsf.jar"))
+        }
+        serverDictionary(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-dictionary'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-dictionary.jar"))
+        }
+        serverFramework(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-framework'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-framework.jar"))
+        }
+        serverPdpPluginManager(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-pdp-pluginmanager'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-pdp-pluginmanager.jar"))
+        }
+        serverPf(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-pf'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-pf.jar"))
+        }
+        serverSecurity(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-security'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-security.jar"))
+        }
+        serverSharedApplicationUsers(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-shared-applicationusers'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-shared-applicationusers.jar"))
+        }
+        serverSharedCustomapps(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-shared-customapps'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-shared-customapps.jar"))
+        }
+        serverSharedEnrollment(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-shared-enrollment'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-shared-enrollment.jar"))
+        }
+        serverSharedServices(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-shared-services'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-shared-services.jar"))
+        }
+        serverSharedTypes(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'server-shared-types'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/server-shared-types.jar"))
+        }
+        storedResultsShared(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'storedResults-shared'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/storedResults-shared.jar"))
+        }
+        tools(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'tools'
+            version ccVersion
+            artifact(file("$buildDir/tools.zip"))
+        }
+        versionLib(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'version'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/version.jar"))
+        }
+        versionTypes(MavenPublication) {
+            groupId 'com.nextlabs.cc.base'
+            artifactId 'version-types'
+            version ccVersion
+            artifact(file("${buildArtifactsFolder}/version-types.jar"))
+        }
+    }
+}
+
+task createToolsZip(type: Zip) {
+    archiveName 'tools.zip'
+    destinationDir file("${buildDir}")
+    from "${buildArtifactsFolder}"
+    from("${buildArtifactsFolder}/release_win_x86/") {
+        into 'tools'
+        include 'ResourcePathDiscovery.exe'
+    }
+    include 'tools/**'
+}
+
+task createSeedDataZip(type: Zip) {
+    archiveName 'seed-data.zip'
+    destinationDir file("${buildDir}")
+    from "${buildArtifactsFolder}"
+    include 'seed_data/**'
+}
+
+task createCertificatesZip(type: Zip) {
+    archiveName 'certificates.zip'
+    destinationDir file("${buildDir}")
+    from "${buildArtifactsFolder}"
+    include 'temp_agent.cer'
+    include 'policyAuthor.cer'
+    include 'orig_temp_agent.cer'
+    include 'keymanagement.cer'
+    include 'enrollment.cer'
+}
+
+task createConsoleOauth2JwtSecretPluginZip(type: Zip) {
+    archiveName 'console-oauth2-jwt-secret-plugin.zip'
+    destinationDir file("$buildDir")
+    from "${buildArtifactsFolder}/../../../release_OAuth2JWTSecretPlugin_9.0.0/build/Oauth2JWTSecret-Plugin/Control Center"
+}
+
+task createOpenAzPepZip(type: Zip) {
+    archiveName 'nextlabs-openaz-pep.zip'
+    destinationDir file("$buildDir")
+    from "${buildArtifactsFolder}/nextlabs-openaz-pep"
+    include 'java/**'
+    include 'js/**'
+}
+
+task publishToArtifactory {
+    dependsOn 'clean'
+    dependsOn 'createToolsZip'
+    dependsOn 'createSeedDataZip'
+    dependsOn 'createConsoleOauth2JwtSecretPluginZip'
+    dependsOn 'createCertificatesZip'
+    dependsOn 'createOpenAzPepZip'
+    dependsOn 'artifactoryPublish'
+    tasks.findByName('createToolsZip').mustRunAfter 'clean'
+    tasks.findByName('createSeedDataZip').mustRunAfter 'createToolsZip'
+    tasks.findByName('createConsoleOauth2JwtSecretPluginZip').mustRunAfter 'createSeedDataZip'
+    tasks.findByName('createCertificatesZip').mustRunAfter 'createConsoleOauth2JwtSecretPluginZip'
+    tasks.findByName('createOpenAzPepZip').mustRunAfter 'createCertificatesZip'
+    tasks.findByName('artifactoryPublish').mustRunAfter 'createOpenAzPepZip'
+}
